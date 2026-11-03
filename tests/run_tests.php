@@ -77,7 +77,23 @@ $resHome = dispatchSim($app, 'GET', '/');
 assertTest($resHome->status() === 200 && str_contains($resHome->content(), 'L\'arte di vivere l\'Italia'), 'GET / (Home Page Luxury Dark/Gold)');
 
 $resCompose = dispatchSim($app, 'GET', '/compose?dest=costa-smeralda&cats=villa,auto,yacht,jet');
-assertTest($resCompose->status() === 200 && str_contains($resCompose->content(), 'Cerca mentre muovi la mappa'), 'GET /compose (Compositore Multi-Tappa con Mappa Geografica Leaflet)');
+$composeHtml = $resCompose->content();
+assertTest(
+    $resCompose->status() === 200
+    && str_contains($composeHtml, 'Cerca mentre muovi la mappa')
+    && str_contains($composeHtml, 'https://tiles.openfreemap.org/styles/dark')
+    && str_contains($composeHtml, 'data-map-mode="real"')
+    && str_contains($composeHtml, 'maplibregl-map')
+    && str_contains($composeHtml, 'msc-pin')
+    && str_contains($composeHtml, 'msc-pin--active')
+    && str_contains($composeHtml, 'msc-pin--hover')
+    && str_contains($composeHtml, 'Inquadra i risultati')
+    && str_contains($composeHtml, 'LngLatBounds')
+    && str_contains($composeHtml, '#131b17')
+    && str_contains($composeHtml, '#0a121d')
+    && !str_contains($composeHtml, 'leaflet@'),
+    'GET /compose (Compositore Multi-Tappa con Mappa WebGL MapLibre GL + OpenFreeMap Dark Luxury, .msc-pin e LngLatBounds)'
+);
 
 $resComposeIso = dispatchSim($app, 'GET', '/compose?dest=costa-smeralda&from=2026-11-08&to=2026-11-15&adults=2&children=0&cats=auto');
 assertTest(
@@ -89,18 +105,28 @@ assertTest(
 );
 
 $resCullinan = dispatchSim($app, 'GET', '/prodotto/rolls-royce-cullinan');
+$cullinanHtml = $resCullinan->content();
 assertTest(
     $resCullinan->status() === 200
-    && str_contains($resCullinan->content(), 'Rolls-Royce Cullinan')
-    && str_contains($resCullinan->content(), 'Scheda tecnica')
-    && str_contains($resCullinan->content(), '571 CV')
-    && str_contains($resCullinan->content(), '200 km/giorno')
-    && str_contains($resCullinan->content(), '12.000')
-    && str_contains($resCullinan->content(), '4,8')
-    && str_contains($resCullinan->content(), '14 recensioni')
-    && str_contains($resCullinan->content(), 'Età minima del conducente: 25 anni')
-    && str_contains($resCullinan->content(), 'closedby="any"'),
-    'GET /prodotto/rolls-royce-cullinan (Scheda Prodotto completa con 571 CV, 200 km/giorno, Cauzione €12.000, 4,8/14 recensioni e Regole di noleggio)'
+    && str_contains($cullinanHtml, 'Rolls-Royce Cullinan')
+    && str_contains($cullinanHtml, 'Scheda tecnica')
+    && str_contains($cullinanHtml, '571 CV')
+    && str_contains($cullinanHtml, '200 km/giorno')
+    && str_contains($cullinanHtml, '12.000')
+    && str_contains($cullinanHtml, '4,8')
+    && str_contains($cullinanHtml, '14 recensioni')
+    && str_contains($cullinanHtml, 'Età minima del conducente: 25 anni')
+    && str_contains($cullinanHtml, 'closedby="any"')
+    && str_contains($cullinanHtml, 'https://tiles.openfreemap.org/styles/dark')
+    && str_contains($cullinanHtml, 'height:280px;border-radius:16px;overflow:hidden;border:1px solid rgba(255, 255, 255, 0.09);')
+    && str_contains($cullinanHtml, 'data-map-mode="real"')
+    && str_contains($cullinanHtml, 'zoom: 11.6')
+    && str_contains($cullinanHtml, 'interactive: false')
+    && str_contains($cullinanHtml, 'msc-pin msc-pin--active')
+    && str_contains($cullinanHtml, 'Porto Cervo')
+    && str_contains($cullinanHtml, 'Costa Smeralda · Sardegna')
+    && !str_contains($cullinanHtml, 'leaflet@'),
+    'GET /prodotto/rolls-royce-cullinan (Scheda Prodotto completa + Mini-Map MapLibre GL 280px, zoom 11.6, marker Porto Cervo e badge Costa Smeralda · Sardegna)'
 );
 
 $resJetDetail = dispatchSim($app, 'GET', '/prodotto/gulfstream-g650er-olbia');

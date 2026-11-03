@@ -17,7 +17,7 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" crossorigin="">
     <style>
         :root {
             --bg-void: #070a0f;
@@ -311,6 +311,64 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
             background: rgba(255, 255, 255, 0.07);
         }
         .form-select option { background: #111723; color: var(--text-ivory); }
+
+        /* MapLibre GL Luxury Markers & Attribution (Prototype exact CSS) */
+        .msc-pin {
+            color: #e8e3d9;
+            cursor: pointer;
+            white-space: nowrap;
+            background: #0c1017eb;
+            border: 1px solid #ffffff24;
+            border-radius: 20px;
+            padding: 6px 13px;
+            font-family: Manrope, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: border-color .2s, color .2s;
+            box-shadow: 0 6px 16px #0006;
+        }
+        .msc-pin--hover {
+            color: #e6c68f;
+            z-index: 2;
+            border-color: #c6a868bf;
+        }
+        .msc-pin--active {
+            color: #241704;
+            z-index: 2;
+            background: linear-gradient(#d0a45a, #b6813e);
+            border-color: #ffecc880;
+            font-weight: 700;
+            position: relative;
+            box-shadow: 0 8px 20px #9a6a3080;
+        }
+        .msc-pin--active:before {
+            content: "";
+            z-index: -1;
+            background: #c69a4e99;
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            animation: 2.6s ease-in-out infinite mscPinPulse;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .maplibregl-ctrl-attrib {
+            border-radius: 10px 0 0;
+            background: #0a0d14a6 !important;
+        }
+        .maplibregl-ctrl-attrib, .maplibregl-ctrl-attrib a {
+            color: #aaa69cbf !important;
+            font: 10px Manrope, sans-serif !important;
+        }
+        .maplibregl-ctrl-attrib-button {
+            filter: invert(.8);
+        }
+        @keyframes mscPinPulse {
+            0%, to { opacity: .55; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: .15; transform: translate(-50%, -50%) scale(1.9); }
+        }
 
         @media (max-width: 900px) {
             .header-inner { height: auto; padding: 14px 0; flex-wrap: wrap; }

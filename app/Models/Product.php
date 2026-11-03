@@ -23,6 +23,7 @@ class Product
         $r['servicesExcluded'] = json_decode($r['services_excluded_json'] ?? '[]', true) ?: [];
         $r['rules'] = json_decode($r['rules_json'] ?? '[]', true) ?: [];
         $r['extra'] = json_decode($r['specs_extra_json'] ?? '{}', true) ?: [];
+        $r['locality'] = $r['extra']['locality'] ?? trim(explode(',', explode('·', (string)($r['location'] ?? ''))[0])[0]);
         $r['lnglat'] = [$r['lng'], $r['lat']];
         $r['map'] = ['x' => $r['map_x'], 'y' => $r['map_y']];
         return $r;

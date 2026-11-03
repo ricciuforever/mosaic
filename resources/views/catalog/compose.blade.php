@@ -131,25 +131,27 @@
         box-shadow: 0 0 28px rgba(200, 155, 82, 0.28);
     }
 
-    /* Map Pane & Custom Price Pill Markers */
+    /* Map Pane & Custom Floating Controls (MapLibre GL + OpenFreeMap Dark Luxury) */
     .compose-map-pane {
         position: sticky;
         top: 205px;
         height: calc(100vh - 205px);
         border-left: 1px solid var(--border-subtle);
-        background: #080c14;
+        background: radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);
+        overflow: hidden;
     }
-    #compose-leaflet-map {
+    #compose-map-container {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
-        background: #080c14;
     }
     .map-overlay-top {
         position: absolute;
-        top: 16px;
+        top: 18px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 500;
+        z-index: 4;
         background: rgba(11, 15, 23, 0.92);
         backdrop-filter: blur(12px);
         border: 1px solid var(--gold-border);
@@ -163,49 +165,6 @@
         color: var(--text-ivory);
         box-shadow: 0 10px 30px rgba(0,0,0,0.65);
         white-space: nowrap;
-    }
-    .mosaic-price-pin {
-        background: #111723;
-        color: #f5f1e8;
-        border: 1.5px solid #c89b52;
-        border-radius: 999px;
-        padding: 4px 10px;
-        font-family: var(--font-sans);
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.75);
-        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
-        display: inline-block;
-    }
-    .mosaic-price-pin:hover,
-    .mosaic-price-pin.pin-active {
-        background: #e4be7a;
-        color: #080b11;
-        border-color: #ffffff;
-        transform: scale(1.16);
-        z-index: 999 !important;
-    }
-    .mosaic-price-pin.pin-selected {
-        background: #34d399;
-        color: #06130e;
-        border-color: #ffffff;
-    }
-    .leaflet-popup-content-wrapper {
-        background: #111723 !important;
-        color: #f5f1e8 !important;
-        border: 1px solid rgba(200, 155, 82, 0.5);
-        border-radius: 16px !important;
-        padding: 0 !important;
-        overflow: hidden;
-        box-shadow: 0 20px 45px rgba(0,0,0,0.85) !important;
-    }
-    .leaflet-popup-content {
-        margin: 0 !important;
-        width: 260px !important;
-    }
-    .leaflet-popup-tip {
-        background: #111723 !important;
     }
 
     @media (max-width: 1080px) {
@@ -358,17 +317,52 @@
     </div>
 
     <aside class="compose-map-pane" aria-label="Mappa Geografica Interattiva Esperienze">
-        <div class="map-overlay-top">
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;">
-                <input type="checkbox" id="map-bbox-toggle" style="accent-color:var(--gold);width:15px;height:15px;">
-                <span>Cerca mentre muovi la mappa</span>
-            </label>
+        <div id="compose-map-mode-wrapper" data-map-mode="real" style="position:absolute;inset:0;background:radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);">
+            <div id="compose-map-container" class="maplibregl-map" style="position:absolute;inset:0;"></div>
+            <div id="compose-faux-map" style="display:none;position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);">
+                <div style="position:absolute;inset:0;opacity:0.05;background:repeating-linear-gradient(56deg,rgba(200,220,210,0.7) 0 1px,transparent 1px 26px),repeating-linear-gradient(-38deg,rgba(200,220,210,0.5) 0 1px,transparent 1px 34px);"></div>
+                <div style="position:absolute;left:54%;top:44%;width:230px;height:230px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(198,154,78,0.22),rgba(198,154,78,0.06) 46%,transparent 70%);"></div>
+                <div style="position:absolute;left:54%;top:44%;width:150px;height:150px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(198,168,104,0.4);"></div>
+                <div id="compose-faux-pins" style="position:absolute;inset:0;"></div>
+            </div>
+
+            <div class="map-overlay-top">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;">
+                    <input type="checkbox" id="map-bbox-toggle" style="accent-color:var(--gold);width:15px;height:15px;">
+                    <span>Cerca mentre muovi la mappa</span>
+                </label>
+            </div>
+
+            <div style="position:absolute;right:18px;top:18px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:3;">
+                <button type="button" id="btn-map-fit-bounds" title="Inquadra i risultati" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.14);background:rgba(12,16,23,0.85);backdrop-filter:blur(8px);color:#d8d3c9;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
+                    <svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <line x1="12" y1="2" x2="12" y2="5"></line>
+                        <line x1="12" y1="19" x2="12" y2="22"></line>
+                        <line x1="2" y1="12" x2="5" y2="12"></line>
+                        <line x1="19" y1="12" x2="22" y2="12"></line>
+                    </svg>
+                </button>
+                <div style="display:flex;flex-direction:column;border-radius:14px;border:1px solid rgba(255,255,255,0.14);background:rgba(12,16,23,0.85);backdrop-filter:blur(8px);overflow:hidden;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
+                    <button type="button" id="btn-map-zoom-in" aria-label="Zoom avanti" style="width:44px;height:44px;border:none;background:transparent;color:#d8d3c9;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                        <svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <div style="height:1px;background:rgba(255,255,255,0.12);"></div>
+                    <button type="button" id="btn-map-zoom-out" aria-label="Zoom indietro" style="width:44px;height:44px;border:none;background:transparent;color:#d8d3c9;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+                        <svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
-        <div id="compose-leaflet-map"></div>
     </aside>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin=""></script>
 <script>
     const MOSAIC_CATALOG = <?= json_encode($products, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
     const MOSAIC_DESTINATIONS = <?= json_encode($destinations, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
@@ -459,34 +453,199 @@
     }
     saveDossierState();
 
-    // Initialize Leaflet Map with CartoDB Dark Matter tiles
-    const map = L.map('compose-leaflet-map', {
-        center: [41.115, 9.535],
-        zoom: 12,
-        zoomControl: true
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO · MOSAIC Luxury Map',
-        subdomains: 'abcd',
-        maxZoom: 18
-    }).addTo(map);
-
-    let markersByCode = {};
-    let suppressNextMoveFilter = false;
-
-    function flyToDestination(destSlug) {
-        const d = MOSAIC_DESTINATIONS.find(x => x.slug === destSlug);
-        if (!d) return;
-        suppressNextMoveFilter = true;
-        map.flyTo([parseFloat(d.lat), parseFloat(d.lng)], parseInt(d.zoom_level || 12, 10), {
-            duration: 0.9
-        });
-        setTimeout(() => { suppressNextMoveFilter = false; }, 1100);
+    // OpenFreeMap Dark Luxury Style Recoloring (Exact Prototype Function)
+    function recolorOpenFreeMapDarkLuxury(styleJson) {
+        const s = typeof structuredClone === 'function' ? structuredClone(styleJson) : JSON.parse(JSON.stringify(styleJson));
+        for (const layer of (s.layers ?? [])) {
+            const id = layer.id ?? '';
+            const paint = (layer.paint = layer.paint ?? {});
+            const layout = (layer.layout = layer.layout ?? {});
+            switch (layer.type) {
+                case 'background':
+                    paint['background-color'] = '#131b17';
+                    break;
+                case 'fill':
+                    if (/water|ocean|river|lake/i.test(id)) {
+                        paint['fill-color'] = '#0a121d';
+                    } else if (/park|wood|grass|forest|landcover|vegetation|cemetery|golf|garden/i.test(id)) {
+                        paint['fill-color'] = '#182619';
+                    } else if (/building/i.test(id)) {
+                        paint['fill-color'] = '#151d26';
+                    } else if (/sand|beach|aeroway|rock|glacier/i.test(id)) {
+                        paint['fill-color'] = '#1a2220';
+                    } else {
+                        paint['fill-color'] = '#121a17';
+                    }
+                    if ('fill-outline-color' in paint) {
+                        paint['fill-outline-color'] = 'rgba(200,220,210,0.05)';
+                    }
+                    break;
+                case 'line':
+                    if (/boundary|admin/i.test(id)) {
+                        paint['line-color'] = 'rgba(198,168,104,0.30)';
+                    } else if (/water|river|stream|canal/i.test(id)) {
+                        paint['line-color'] = '#12202e';
+                    } else if (/rail|transit|ferry/i.test(id)) {
+                        paint['line-color'] = 'rgba(200,214,208,0.06)';
+                    } else if (/motorway|trunk|primary|major/i.test(id)) {
+                        paint['line-color'] = 'rgba(202,214,208,0.17)';
+                    } else {
+                        paint['line-color'] = 'rgba(202,214,208,0.09)';
+                    }
+                    break;
+                case 'symbol':
+                    if (/poi|housenumber|house_num|airport|transit|ferry/i.test(id)) {
+                        layout.visibility = 'none';
+                        break;
+                    }
+                    paint['text-color'] = /place|city|town|village|country|state|capital/i.test(id)
+                        ? 'rgba(216,211,201,0.8)'
+                        : 'rgba(216,211,201,0.5)';
+                    paint['text-halo-color'] = 'rgba(10,13,20,0.92)';
+                    paint['text-halo-width'] = 1.1;
+                    if (layout['icon-image']) {
+                        paint['icon-opacity'] = 0.3;
+                    }
+                    break;
+                case 'fill-extrusion':
+                    paint['fill-extrusion-color'] = '#121924';
+                    break;
+            }
+        }
+        return s;
     }
+
+    let map = null;
+    let mapLoaded = false;
+    let mapFauxMode = false;
+    const markersByCode = new Map();
+    let hoveredCode = null;
+    let suppressNextMoveFilter = false;
 
     function currentLeg() {
         return dossierState.legs[dossierState.activeLegIndex] || dossierState.legs[0];
+    }
+
+    function activateFauxMapFallback() {
+        mapFauxMode = true;
+        const wrapper = document.getElementById('compose-map-mode-wrapper');
+        const realContainer = document.getElementById('compose-map-container');
+        const fauxContainer = document.getElementById('compose-faux-map');
+        if (wrapper) wrapper.setAttribute('data-map-mode', 'faux');
+        if (realContainer) realContainer.style.display = 'none';
+        if (fauxContainer) fauxContainer.style.display = 'block';
+        renderFauxPins(getFilteredProducts());
+    }
+
+    function renderFauxPins(productsList) {
+        const fauxPins = document.getElementById('compose-faux-pins');
+        if (!fauxPins) return;
+        fauxPins.innerHTML = '';
+        const leg = currentLeg();
+        const selectedCodes = Object.values(leg.selected).filter(Boolean);
+        productsList.forEach((p, idx) => {
+            const isSelected = selectedCodes.includes(p.code);
+            const isHovered = hoveredCode === p.code && !isSelected;
+            const pin = document.createElement('div');
+            pin.className = 'msc-pin' + (isSelected ? ' msc-pin--active' : (isHovered ? ' msc-pin--hover' : ''));
+            pin.style.position = 'absolute';
+            pin.style.left = `${p.map_x || (28 + (idx * 13) % 52)}%`;
+            pin.style.top = `${p.map_y || (26 + (idx * 17) % 54)}%`;
+            pin.style.transform = 'translate(-50%, -100%)';
+            pin.textContent = '€' + Number(p.price).toLocaleString('it-IT');
+            pin.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                window.location.href = `/prodotto/${p.slug}`;
+            });
+            fauxPins.appendChild(pin);
+        });
+    }
+
+    function fitMapToProducts(productsList) {
+        if (!map || !mapLoaded) return;
+        const d = MOSAIC_DESTINATIONS.find(x => x.slug === currentLeg().destination) || MOSAIC_DESTINATIONS[0];
+        suppressNextMoveFilter = true;
+        if (!productsList || productsList.length === 0) {
+            if (d) {
+                map.easeTo({
+                    center: [parseFloat(d.lng), parseFloat(d.lat)],
+                    zoom: parseFloat(d.zoom_level || 11.4),
+                    duration: 900
+                });
+            }
+        } else if (productsList.length === 1) {
+            map.easeTo({
+                center: [parseFloat(productsList[0].lng), parseFloat(productsList[0].lat)],
+                zoom: 11.8,
+                duration: 900
+            });
+        } else {
+            const bounds = new maplibregl.LngLatBounds();
+            productsList.forEach(p => bounds.extend([parseFloat(p.lng), parseFloat(p.lat)]));
+            map.fitBounds(bounds, {
+                padding: { top: 80, bottom: 170, left: 80, right: 80 },
+                maxZoom: 12.4,
+                duration: 900
+            });
+        }
+        setTimeout(() => { suppressNextMoveFilter = false; }, 1000);
+    }
+
+    function flyToDestination(destSlug) {
+        const d = MOSAIC_DESTINATIONS.find(x => x.slug === destSlug);
+        if (!d || !map || !mapLoaded) return;
+        suppressNextMoveFilter = true;
+        map.easeTo({
+            center: [parseFloat(d.lng), parseFloat(d.lat)],
+            zoom: parseFloat(d.zoom_level || 11.4),
+            duration: 900
+        });
+        setTimeout(() => { suppressNextMoveFilter = false; }, 1000);
+    }
+
+    async function initMapLibre() {
+        const initDest = MOSAIC_DESTINATIONS.find(x => x.slug === currentLeg().destination) || MOSAIC_DESTINATIONS[0];
+        const initCenter = initDest ? [parseFloat(initDest.lng), parseFloat(initDest.lat)] : [9.535, 41.105];
+        const initZoom = initDest ? parseFloat(initDest.zoom_level || 11.4) : 11.4;
+
+        try {
+            if (typeof maplibregl === 'undefined') {
+                throw new Error('MapLibre GL non disponibile');
+            }
+            const res = await fetch('https://tiles.openfreemap.org/styles/dark');
+            if (!res.ok) {
+                throw new Error(`style HTTP ${res.status}`);
+            }
+            const rawStyle = await res.json();
+            const luxuryStyle = recolorOpenFreeMapDarkLuxury(rawStyle);
+
+            map = new maplibregl.Map({
+                container: document.getElementById('compose-map-container'),
+                style: luxuryStyle,
+                center: initCenter,
+                zoom: initZoom,
+                attributionControl: false,
+                interactive: true,
+                fadeDuration: 150
+            });
+
+            map.on('load', () => {
+                mapLoaded = true;
+                syncMapMarkers(getFilteredProducts(), true);
+            });
+
+            map.on('moveend', () => {
+                if (!suppressNextMoveFilter && document.getElementById('map-bbox-toggle').checked) {
+                    renderCardsAndMarkers(false);
+                }
+            });
+
+            map.on('error', () => {
+                if (!mapLoaded) activateFauxMapFallback();
+            });
+        } catch (err) {
+            activateFauxMapFallback();
+        }
     }
 
     function populateSubtypeOptions() {
@@ -522,7 +681,7 @@
                 dossierState.activeLegIndex = idx;
                 syncControlsFromLeg();
                 flyToDestination(currentLeg().destination);
-                renderAll();
+                renderAll(true);
             });
 
             if (dossierState.legs.length > 1) {
@@ -540,7 +699,7 @@
                     saveDossierState();
                     syncControlsFromLeg();
                     flyToDestination(currentLeg().destination);
-                    renderAll();
+                    renderAll(true);
                 });
                 btn.appendChild(delSpan);
             }
@@ -583,7 +742,7 @@
         const minCap = parseInt(document.getElementById('filter-min-cap').value, 10) || 1;
         const q = document.getElementById('filter-search').value.trim().toLowerCase();
         const useBbox = document.getElementById('map-bbox-toggle').checked;
-        const bounds = useBbox ? map.getBounds() : null;
+        const bounds = (useBbox && map && mapLoaded) ? map.getBounds() : null;
 
         let list = MOSAIC_CATALOG.filter((p) => {
             if (p.category !== cat) return false;
@@ -598,7 +757,7 @@
             if (bounds) {
                 const lat = parseFloat(p.lat);
                 const lng = parseFloat(p.lng);
-                if (!bounds.contains([lat, lng])) return false;
+                if (!bounds.contains([lng, lat])) return false;
             }
             return true;
         });
@@ -626,20 +785,81 @@
             leg.selected[prod.category] = code;
         }
         saveDossierState();
-        renderAll();
+        renderAll(false);
     }
     window.toggleSelectProduct = toggleSelectProduct;
 
-    function highlightPin(code, active) {
-        const marker = markersByCode[code];
-        if (!marker || !marker._icon) return;
-        const pill = marker._icon.querySelector('.mosaic-price-pin');
-        if (pill) {
-            pill.classList.toggle('pin-active', active);
+    function syncPinStates() {
+        const leg = currentLeg();
+        const selectedCodes = Object.values(leg.selected).filter(Boolean);
+        for (const [code, marker] of markersByCode.entries()) {
+            const el = marker.getElement();
+            const isSelected = selectedCodes.includes(code);
+            el.classList.toggle('msc-pin--active', isSelected);
+            el.classList.toggle('msc-pin--hover', code === hoveredCode && !isSelected);
+        }
+        if (mapFauxMode) {
+            renderFauxPins(getFilteredProducts());
         }
     }
 
-    function renderCardsAndMarkers() {
+    function highlightPin(code, active) {
+        hoveredCode = active ? code : null;
+        syncPinStates();
+    }
+
+    function syncMapMarkers(filtered, shouldFitBounds = false) {
+        if (mapFauxMode) {
+            renderFauxPins(filtered);
+            return;
+        }
+        if (!map || !mapLoaded) return;
+
+        const nextCodes = new Set(filtered.map(p => p.code));
+        for (const [code, marker] of markersByCode.entries()) {
+            if (!nextCodes.has(code)) {
+                marker.remove();
+                markersByCode.delete(code);
+            }
+        }
+
+        filtered.forEach((p) => {
+            if (!markersByCode.has(p.code)) {
+                const el = document.createElement('div');
+                el.className = 'msc-pin';
+                el.textContent = '€' + Number(p.price).toLocaleString('it-IT');
+                el.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    window.location.href = `/prodotto/${p.slug}`;
+                });
+                el.addEventListener('mouseenter', () => {
+                    hoveredCode = p.code;
+                    syncPinStates();
+                    const cardEl = document.querySelector(`.compose-card[data-code="${p.code}"]`);
+                    if (cardEl) cardEl.classList.add('hovered');
+                });
+                el.addEventListener('mouseleave', () => {
+                    hoveredCode = null;
+                    syncPinStates();
+                    const cardEl = document.querySelector(`.compose-card[data-code="${p.code}"]`);
+                    if (cardEl) cardEl.classList.remove('hovered');
+                });
+
+                const marker = new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -4] })
+                    .setLngLat([parseFloat(p.lng), parseFloat(p.lat)])
+                    .addTo(map);
+                markersByCode.set(p.code, marker);
+            }
+        });
+
+        syncPinStates();
+
+        if (shouldFitBounds && !document.getElementById('map-bbox-toggle').checked) {
+            fitMapToProducts(filtered);
+        }
+    }
+
+    function renderCardsAndMarkers(shouldFitBounds = false) {
         const leg = currentLeg();
         const cat = dossierState.activeCategory;
         const filtered = getFilteredProducts();
@@ -650,10 +870,6 @@
         const container = document.getElementById('compose-cards-container');
         container.innerHTML = '';
 
-        // Clear existing map markers
-        Object.values(markersByCode).forEach(m => map.removeLayer(m));
-        markersByCode = {};
-
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div style="grid-column:1/-1;padding:42px;text-align:center;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:16px;">
@@ -662,6 +878,7 @@
                     <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('btn-reset-filters').click()">Ripristina tutti i filtri</button>
                 </div>
             `;
+            syncMapMarkers([], shouldFitBounds);
             return;
         }
 
@@ -673,7 +890,6 @@
             const totalForStay = p.price * mult;
             const img = (p.images && p.images[0]) ? p.images[0] : '/images/hero.jpg';
 
-            // 1. Create Card
             const card = document.createElement('article');
             card.className = 'compose-card ' + (isSelected ? 'selected-card' : '');
             card.dataset.code = p.code;
@@ -710,44 +926,16 @@
             card.addEventListener('mouseenter', () => highlightPin(p.code, true));
             card.addEventListener('mouseleave', () => highlightPin(p.code, false));
             container.appendChild(card);
-
-            // 2. Create Map Price Pill Marker
-            const divIcon = L.divIcon({
-                className: 'mosaic-pin-wrapper',
-                html: `<div class="mosaic-price-pin ${isSelected ? 'pin-selected' : ''}">€${Number(p.price).toLocaleString('it-IT')}</div>`,
-                iconSize: [76, 30],
-                iconAnchor: [38, 15]
-            });
-
-            const marker = L.marker([parseFloat(p.lat), parseFloat(p.lng)], { icon: divIcon }).addTo(map);
-            const popupHtml = `
-                <div>
-                    <img src="${img}" alt="${p.title}" style="width:100%;height:135px;object-fit:cover;">
-                    <div style="padding:12px 14px;">
-                        <div style="font-size:10.5px;color:#e4be7a;text-transform:uppercase;">${p.location}</div>
-                        <div style="font-family:var(--font-serif);font-size:19px;font-weight:600;margin:2px 0 4px;">${p.title}</div>
-                        <div style="font-size:12px;color:#c5beb0;margin-bottom:10px;">€${Number(p.price).toLocaleString('it-IT')} / ${p.unit}</div>
-                        <div style="display:flex;gap:6px;">
-                            <a href="/prodotto/${p.slug}" class="btn btn-ghost btn-sm" style="flex:1;">Dettagli</a>
-                            <button type="button" class="btn btn-gold btn-sm" style="flex:1;" onclick="toggleSelectProduct('${p.code}')">
-                                ${isSelected ? 'Rimuovi' : 'Seleziona'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            marker.bindPopup(popupHtml);
-            marker.on('mouseover', () => card.classList.add('hovered'));
-            marker.on('mouseout', () => card.classList.remove('hovered'));
-            markersByCode[p.code] = marker;
         });
+
+        syncMapMarkers(filtered, shouldFitBounds);
     }
 
     function setActiveCategory(cat) {
         dossierState.activeCategory = cat;
         saveDossierState();
         populateSubtypeOptions();
-        renderAll();
+        renderAll(true);
     }
     window.setActiveCategory = setActiveCategory;
 
@@ -776,9 +964,9 @@
         adultsSelect.value = adultsStr;
     }
 
-    function renderAll() {
+    function renderAll(shouldFitBounds = false) {
         renderNotchBar();
-        renderCardsAndMarkers();
+        renderCardsAndMarkers(shouldFitBounds);
     }
 
     // Event Listeners
@@ -787,19 +975,19 @@
         document.getElementById('map-bbox-toggle').checked = false;
         saveDossierState();
         flyToDestination(e.target.value);
-        renderAll();
+        renderAll(true);
     });
 
     document.getElementById('leg-days-select').addEventListener('change', (e) => {
         currentLeg().days = parseInt(e.target.value, 10) || 4;
         saveDossierState();
-        renderAll();
+        renderAll(false);
     });
 
     document.getElementById('leg-adults-select').addEventListener('change', (e) => {
         currentLeg().adults = parseInt(e.target.value, 10) || 2;
         saveDossierState();
-        renderAll();
+        renderAll(false);
     });
 
     document.getElementById('btn-add-leg').addEventListener('click', () => {
@@ -819,13 +1007,13 @@
         saveDossierState();
         syncControlsFromLeg();
         flyToDestination(pick);
-        renderAll();
+        renderAll(true);
     });
 
     ['filter-sort', 'filter-subtype', 'filter-max-price', 'filter-min-cap', 'map-bbox-toggle'].forEach((id) => {
-        document.getElementById(id).addEventListener('change', () => renderCardsAndMarkers());
+        document.getElementById(id).addEventListener('change', () => renderCardsAndMarkers(true));
     });
-    document.getElementById('filter-search').addEventListener('input', () => renderCardsAndMarkers());
+    document.getElementById('filter-search').addEventListener('input', () => renderCardsAndMarkers(true));
 
     document.getElementById('btn-reset-filters').addEventListener('click', () => {
         document.getElementById('filter-sort').value = 'featured';
@@ -834,20 +1022,24 @@
         document.getElementById('filter-min-cap').value = '1';
         document.getElementById('filter-search').value = '';
         document.getElementById('map-bbox-toggle').checked = false;
-        renderCardsAndMarkers();
+        renderCardsAndMarkers(true);
     });
 
-    map.on('moveend', () => {
-        if (!suppressNextMoveFilter && document.getElementById('map-bbox-toggle').checked) {
-            renderCardsAndMarkers();
-        }
+    document.getElementById('btn-map-fit-bounds').addEventListener('click', () => {
+        fitMapToProducts(getFilteredProducts());
+    });
+    document.getElementById('btn-map-zoom-in').addEventListener('click', () => {
+        if (map && mapLoaded) map.zoomIn();
+    });
+    document.getElementById('btn-map-zoom-out').addEventListener('click', () => {
+        if (map && mapLoaded) map.zoomOut();
     });
 
     // Initial boot
     syncControlsFromLeg();
     populateSubtypeOptions();
-    flyToDestination(currentLeg().destination);
-    renderAll();
+    renderAll(false);
+    initMapLibre();
 </script>
 
 <?php require resource_path('views/layouts/footer.blade.php'); ?>

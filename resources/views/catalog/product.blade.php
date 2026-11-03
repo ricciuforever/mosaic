@@ -443,10 +443,20 @@ $extra = $product['extra'] ?? [];
             <!-- Dove si trova (Mini-Map) -->
             <section class="detail-section" style="border-bottom:none;">
                 <h2 class="detail-section-title">Dove si trova</h2>
-                <p style="font-size:13.5px;color:var(--text-sand);margin-bottom:14px;">
-                    📍 <?= e($product['location']) ?> · Coordinate verificate: <?= number_format($product['lat'], 4) ?>° N, <?= number_format($product['lng'], 4) ?>° E
-                </p>
-                <div id="product-mini-map" style="height:310px;border-radius:16px;border:1px solid var(--border-subtle);overflow:hidden;"></div>
+                <div style="position:relative;height:280px;border-radius:16px;overflow:hidden;border:1px solid rgba(255, 255, 255, 0.09);">
+                    <div id="product-mini-map-wrapper" data-map-mode="real" style="position:absolute;inset:0;background:radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);">
+                        <div id="product-mini-map" class="maplibregl-map" style="position:absolute;inset:0;"></div>
+                        <div id="product-faux-mini-map" style="display:none;position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);">
+                            <div style="position:absolute;inset:0;opacity:0.05;background:repeating-linear-gradient(56deg,rgba(200,220,210,0.7) 0 1px,transparent 1px 26px),repeating-linear-gradient(-38deg,rgba(200,220,210,0.5) 0 1px,transparent 1px 34px);"></div>
+                            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);z-index:2;">
+                                <div class="msc-pin msc-pin--active"><?= e($product['locality'] ?? 'Porto Cervo') ?></div>
+                            </div>
+                        </div>
+                    </div>
+                    <span style="position:absolute;left:16px;bottom:12px;z-index:3;padding:5px 12px;border-radius:14px;background:rgba(10,13,20,0.7);backdrop-filter:blur(6px);font-family:'Manrope',sans-serif;font-size:12.5px;color:rgba(216,211,201,0.85);">
+                        <?= e(($product['destination_name'] ?? 'Costa Smeralda') . ' · ' . ($product['destination_region'] ?? 'Sardegna')) ?>
+                    </span>
+                </div>
             </section>
         </div>
 
@@ -554,13 +564,14 @@ $extra = $product['extra'] ?? [];
     </div>
 </dialog>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" crossorigin=""></script>
 <script>
     (function() {
         const unitPrice = <?= (int)$product['price'] ?>;
         const prodCode = <?= json_encode($product['code']) ?>;
         const prodCat = <?= json_encode($product['category']) ?>;
         const prodDest = <?= json_encode($product['destination_slug']) ?>;
+        const prodLocality = <?= json_encode($product['locality'] ?? 'Porto Cervo', JSON_UNESCAPED_UNICODE) ?>;
 
         const qtySelect = document.getElementById('detail-qty-select');
         qtySelect.addEventListener('change', () => {
@@ -617,22 +628,115 @@ $extra = $product['extra'] ?? [];
             window.location.href = '/richiesta';
         });
 
-        // Mini-Map initialization
+        function recolorOpenFreeMapDarkLuxury(styleJson) {
+            const s = typeof structuredClone === 'function' ? structuredClone(styleJson) : JSON.parse(JSON.stringify(styleJson));
+            for (const layer of (s.layers ?? [])) {
+                const id = layer.id ?? '';
+                const paint = (layer.paint = layer.paint ?? {});
+                const layout = (layer.layout = layer.layout ?? {});
+                switch (layer.type) {
+                    case 'background':
+                        paint['background-color'] = '#131b17';
+                        break;
+                    case 'fill':
+                        if (/water|ocean|river|lake/i.test(id)) {
+                            paint['fill-color'] = '#0a121d';
+                        } else if (/park|wood|grass|forest|landcover|vegetation|cemetery|golf|garden/i.test(id)) {
+                            paint['fill-color'] = '#182619';
+                        } else if (/building/i.test(id)) {
+                            paint['fill-color'] = '#151d26';
+                        } else if (/sand|beach|aeroway|rock|glacier/i.test(id)) {
+                            paint['fill-color'] = '#1a2220';
+                        } else {
+                            paint['fill-color'] = '#121a17';
+                        }
+                        if ('fill-outline-color' in paint) {
+                            paint['fill-outline-color'] = 'rgba(200,220,210,0.05)';
+                        }
+                        break;
+                    case 'line':
+                        if (/boundary|admin/i.test(id)) {
+                            paint['line-color'] = 'rgba(198,168,104,0.30)';
+                        } else if (/water|river|stream|canal/i.test(id)) {
+                            paint['line-color'] = '#12202e';
+                        } else if (/rail|transit|ferry/i.test(id)) {
+                            paint['line-color'] = 'rgba(200,214,208,0.06)';
+                        } else if (/motorway|trunk|primary|major/i.test(id)) {
+                            paint['line-color'] = 'rgba(202,214,208,0.17)';
+                        } else {
+                            paint['line-color'] = 'rgba(202,214,208,0.09)';
+                        }
+                        break;
+                    case 'symbol':
+                        if (/poi|housenumber|house_num|airport|transit|ferry/i.test(id)) {
+                            layout.visibility = 'none';
+                            break;
+                        }
+                        paint['text-color'] = /place|city|town|village|country|state|capital/i.test(id)
+                            ? 'rgba(216,211,201,0.8)'
+                            : 'rgba(216,211,201,0.5)';
+                        paint['text-halo-color'] = 'rgba(10,13,20,0.92)';
+                        paint['text-halo-width'] = 1.1;
+                        if (layout['icon-image']) {
+                            paint['icon-opacity'] = 0.3;
+                        }
+                        break;
+                    case 'fill-extrusion':
+                        paint['fill-extrusion-color'] = '#121924';
+                        break;
+                }
+            }
+            return s;
+        }
+
+        function activateFauxMiniMap() {
+            const wrapper = document.getElementById('product-mini-map-wrapper');
+            const realEl = document.getElementById('product-mini-map');
+            const fauxEl = document.getElementById('product-faux-mini-map');
+            if (wrapper) wrapper.setAttribute('data-map-mode', 'faux');
+            if (realEl) realEl.style.display = 'none';
+            if (fauxEl) fauxEl.style.display = 'block';
+        }
+
+        // Mini-Map initialization (MapLibre GL + OpenFreeMap Dark Luxury, mini=true)
         const lat = <?= (float)$product['lat'] ?>;
         const lng = <?= (float)$product['lng'] ?>;
-        const miniMap = L.map('product-mini-map', { center: [lat, lng], zoom: 13 });
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-            subdomains: 'abcd'
-        }).addTo(miniMap);
 
-        const pinIcon = L.divIcon({
-            className: 'mosaic-pin-wrapper',
-            html: `<div style="background:#e4be7a;color:#080b11;border:2px solid #fff;border-radius:99px;padding:5px 12px;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,0.8);">€${unitPrice.toLocaleString('it-IT')}</div>`,
-            iconSize: [84, 32],
-            iconAnchor: [42, 16]
-        });
-        L.marker([lat, lng], { icon: pinIcon }).addTo(miniMap);
+        (async function initMiniMap() {
+            try {
+                if (typeof maplibregl === 'undefined') {
+                    throw new Error('MapLibre GL non disponibile');
+                }
+                const res = await fetch('https://tiles.openfreemap.org/styles/dark');
+                if (!res.ok) {
+                    throw new Error(`style HTTP ${res.status}`);
+                }
+                const luxuryStyle = recolorOpenFreeMapDarkLuxury(await res.json());
+                const miniMap = new maplibregl.Map({
+                    container: document.getElementById('product-mini-map'),
+                    style: luxuryStyle,
+                    center: [lng, lat],
+                    zoom: 11.6,
+                    attributionControl: false,
+                    interactive: false,
+                    fadeDuration: 150
+                });
+
+                miniMap.on('load', () => {
+                    const pinEl = document.createElement('div');
+                    pinEl.className = 'msc-pin msc-pin--active';
+                    pinEl.textContent = prodLocality;
+                    new maplibregl.Marker({ element: pinEl, anchor: 'bottom', offset: [0, -4] })
+                        .setLngLat([lng, lat])
+                        .addTo(miniMap);
+                    miniMap.jumpTo({ center: [lng, lat], zoom: 11.6 });
+                });
+
+                miniMap.on('error', () => activateFauxMiniMap());
+            } catch (e) {
+                activateFauxMiniMap();
+            }
+        })();
     })();
 </script>
 
