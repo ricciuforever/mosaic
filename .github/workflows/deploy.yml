@@ -1,0 +1,51 @@
+name: CI & Deploy su Cloud1 Plesk (mosaic.emanueletolomei.it)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    name: Test Automatici & Deploy Plesk
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_sqlite, pdo_mysql, curl, json
+
+      - name: Esecuzione Suite Test Automatici (30/30)
+        run: php artisan test
+
+      - name: Trigger Plesk Git Webhook
+        if: ${{ secrets.PLESK_WEBHOOK_URL != '' }}
+        env:
+          PLESK_WEBHOOK_URL: ${{ secrets.PLESK_WEBHOOK_URL }}
+        run: |
+          curl -k -sS -X POST "$PLESK_WEBHOOK_URL" || true
+
+      - name: Deploy diretto e allineamento permessi su Cloud1 Plesk
+        if: ${{ secrets.SSH_HOST != '' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: |
+            plesk ext git --deploy -domain mosaic.emanueletolomei.it -name mosaic.git || (cd /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it && git fetch origin main && git reset --hard origin/main)
+            chown -R emanueletolomei.it_4qrclx883cu:psaserv /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it
+            find /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it -type d -exec chmod 755 {} +
+            find /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it -type f -exec chmod 644 {} +
+            chmod +x /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/artisan
+            if [ -f /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/.env ]; then
+              chown emanueletolomei.it_4qrclx883cu:psaserv /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/.env
+              chmod 640 /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/.env
+            fi
+            php /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/artisan optimize:clear

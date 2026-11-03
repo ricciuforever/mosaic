@@ -1,0 +1,20 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Blocca qualsiasi accesso a file .env o configurazioni sensibili
+    RewriteRule ^(\.env|composer\.(json|lock)|artisan|database/) - [F,L,NC]
+
+    # Reindirizza il traffico verso public/ se la webroot Plesk punta alla root di progetto
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
+</IfModule>
+
+<FilesMatch "^\.env|composer\.(json|lock)|\.sql$|\.pem$|\.key$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

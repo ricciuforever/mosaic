@@ -1,0 +1,34 @@
+# Credenziali, chiavi, certificati e configurazioni private
+.env*
+*cred*
+credenziali*
+*secret*
+*password*
+*.pem
+*.key
+*.pfx
+*.p12
+*.id_rsa
+*.id_ed25519
+ssh_credentials*
+
+# Laravel / Vendor / Storage
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/logs/*.log
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+/database/*.sqlite
+/database/*.sqlite-*

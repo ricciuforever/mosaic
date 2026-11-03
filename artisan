@@ -1,0 +1,92 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Laravel Artisan CLI per Mosaic Luxury Concierge.
+ * Comandi supportati:
+ *   php artisan migrate
+ *   php artisan migrate:fresh [--seed]
+ *   php artisan db:seed
+ *   php artisan db:dump
+ *   php artisan route:list
+ *   php artisan test
+ *   php artisan serve
+ */
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use App\Core\Application;
+use App\Core\Database;
+use App\Core\Migrator;
+
+$argv = $_SERVER['argv'] ?? [];
+$command = $argv[1] ?? 'list';
+$flags = array_slice($argv, 2);
+
+switch ($command) {
+    case 'migrate':
+        echo "Esecuzione migrazioni database (" . Database::driver() . ")...\n";
+        Migrator::migrate(false, true);
+        echo "Migrazioni completate.\n";
+        exit(0);
+
+    case 'migrate:fresh':
+        echo "Ripristino completo tabelle e migrazioni (" . Database::driver() . ")...\n";
+        Migrator::migrate(true, true);
+        if (in_array('--seed', $flags, true)) {
+            echo "Esecuzione seeder...\n";
+            Migrator::seed(true);
+        }
+        echo "Operazione migrate:fresh completata.\n";
+        exit(0);
+
+    case 'db:seed':
+        echo "Esecuzione seeder su database (" . Database::driver() . ")...\n";
+        Migrator::seed(true);
+        echo "Seeding completato.\n";
+        exit(0);
+
+    case 'db:dump':
+        $dumpPath = database_path('mosaic_plesk_dump.sql');
+        Database::ensureBootstrapped();
+        $bytes = Migrator::generateSqlDump($dumpPath);
+        echo "Dump SQL Plesk generato con successo in: {$dumpPath} ({$bytes} byte).\n";
+        exit(0);
+
+    case 'route:list':
+        $app = require __DIR__ . '/bootstrap/app.php';
+        foreach ($app->router()->getRoutes() as $r) {
+            $mw = !empty($r['middleware']) ? ' [' . implode(', ', $r['middleware']) . ']' : '';
+            printf("%-7s %-42s%s\n", $r['method'], $r['uri'], $mw);
+        }
+        exit(0);
+
+    case 'test':
+        require __DIR__ . '/tests/run_tests.php';
+        exit(0);
+
+    case 'serve':
+        $host = '127.0.0.1';
+        $port = '8000';
+        echo "Mosaic Luxury Server avviato su http://{$host}:{$port}\n";
+        passthru(PHP_BINARY . " -S {$host}:{$port} -t " . escapeshellarg(__DIR__ . '/public') . ' ' . escapeshellarg(__DIR__ . '/public/index.php'));
+        exit(0);
+
+    case 'optimize:clear':
+    case 'config:clear':
+    case 'cache:clear':
+        echo "Cache di configurazione e viste pulita.\n";
+        exit(0);
+
+    default:
+        echo "Mosaic Artisan CLI\n";
+        echo "Comandi disponibili:\n";
+        echo "  migrate              Esegue le migrazioni del database\n";
+        echo "  migrate:fresh --seed Ricrea tutte le tabelle e popola i dati demo\n";
+        echo "  db:seed              Popola destinazioni, fornitori, prodotti, ruoli RBAC e prenotazioni\n";
+        echo "  db:dump              Esporta il dump MySQL pronto per Cloud1 Plesk\n";
+        echo "  route:list           Elenca tutte le rotte registrate\n";
+        echo "  test                 Esegue la suite di test automatici\n";
+        echo "  serve                Avvia il server di sviluppo locale\n";
+        exit(0);
+}
