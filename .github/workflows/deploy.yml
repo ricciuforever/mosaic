@@ -24,14 +24,14 @@ jobs:
         run: php artisan test
 
       - name: Trigger Plesk Git Webhook
-        if: ${{ secrets.PLESK_WEBHOOK_URL != '' }}
         env:
           PLESK_WEBHOOK_URL: ${{ secrets.PLESK_WEBHOOK_URL }}
         run: |
-          curl -k -sS -X POST "$PLESK_WEBHOOK_URL" || true
+          if [ -n "$PLESK_WEBHOOK_URL" ]; then
+            curl -k -sS -X POST "$PLESK_WEBHOOK_URL" || true
+          fi
 
       - name: Deploy diretto e allineamento permessi su Cloud1 Plesk
-        if: ${{ secrets.SSH_HOST != '' }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -48,4 +48,4 @@ jobs:
               chown emanueletolomei.it_4qrclx883cu:psaserv /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/.env
               chmod 640 /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/.env
             fi
-            php /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/artisan optimize:clear
+            /opt/plesk/php/8.3/bin/php /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it/artisan optimize:clear
