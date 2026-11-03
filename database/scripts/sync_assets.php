@@ -15,7 +15,9 @@ $slugs = [
     'porsche-911-turbo-cabrio', 'maserati-grancabrio-trofeo', 'bentley-continental-gtc',
     'mercedes-classe-g-63', 'rolls-royce-cullinan', 'aston-martin-db12-volante', 'ferrari-roma-spider',
     'ferretti-680', 'cranchi-43', 'pardo-50', 'sanlorenzo-sl78', 'gozzo-apreamare-38',
-    'riva-aquarama-super', 'vandutch-40-como', 'pershing-7x', 'wallytender-48', 'frauscher-858-fantom'
+    'riva-aquarama-super', 'vandutch-40-como', 'pershing-7x', 'wallytender-48', 'frauscher-858-fantom',
+    'gulfstream-g650er-olbia', 'pilatus-pc-24-costa-smeralda', 'agustawestland-aw139-heli-vip',
+    'bombardier-challenger-350-napoli', 'airbus-ach145-positano-capri', 'cessna-citation-longitude-como'
 ];
 
 $urls = [

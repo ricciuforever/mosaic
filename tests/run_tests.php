@@ -68,6 +68,7 @@ assertTest(count($jets) === 6, 'Categoria Jet Privati & Elicotteri VIP attiva co
 
 $missingOrCorruptImages = [];
 $totalVerifiedImages = 0;
+$seenImageHashes = [];
 foreach ($allProducts as $prod) {
     $imgs = $prod['images'] ?? [];
     if (count($imgs) < 4) {
@@ -75,26 +76,21 @@ foreach ($allProducts as $prod) {
     }
     foreach ($imgs as $idx => $imgRel) {
         $fullImgPath = base_path('public' . $imgRel);
-        if (!is_file($fullImgPath) || filesize($fullImgPath) < 500) {
-            $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: file mancante o vuoto ({$imgRel})";
+        if (!is_file($fullImgPath) || filesize($fullImgPath) < 20000) {
+            $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: file mancante o < 20KB ({$imgRel})";
             continue;
         }
-        $ext = strtolower(pathinfo($fullImgPath, PATHINFO_EXTENSION));
-        if ($ext === 'svg') {
-            libxml_use_internal_errors(true);
-            $xml = simplexml_load_file($fullImgPath);
-            libxml_clear_errors();
-            if ($xml === false) {
-                $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: SVG XML malformato ({$imgRel})";
-                continue;
-            }
-        } else {
-            $imgInfo = @getimagesize($fullImgPath);
-            if ($imgInfo === false || ($imgInfo[0] ?? 0) < 200 || ($imgInfo[1] ?? 0) < 200) {
-                $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: immagine raster corrotta ({$imgRel})";
-                continue;
-            }
+        $imgInfo = @getimagesize($fullImgPath);
+        if ($imgInfo === false || ($imgInfo[0] ?? 0) < 1000 || ($imgInfo[1] ?? 0) < 600 || ($imgInfo['mime'] ?? '') !== 'image/webp') {
+            $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: immagine non WebP HD ({$imgRel})";
+            continue;
         }
+        $md5 = md5_file($fullImgPath);
+        if (isset($seenImageHashes[$md5])) {
+            $missingOrCorruptImages[] = "Duplicato MD5 tra {$seenImageHashes[$md5]} e {$prod['slug']}[{$idx}] ({$imgRel})";
+            continue;
+        }
+        $seenImageHashes[$md5] = "{$prod['slug']}[{$idx}]";
         $totalVerifiedImages++;
     }
 }
@@ -107,9 +103,9 @@ foreach (glob(base_path('public/images/products/*/*.svg')) ?: [] as $svgFile) {
     }
 }
 assertTest(
-    empty($missingOrCorruptImages) && $totalVerifiedImages === 144,
-    'Integrità 144 immagini prodotto (hero + galleria 4 foto reali verificate per tutti i 36 prodotti incluso AgustaWestland AW139 VIP Heli)',
-    empty($missingOrCorruptImages) ? "Verificate: {$totalVerifiedImages}" : implode('; ', array_slice($missingOrCorruptImages, 0, 5))
+    empty($missingOrCorruptImages) && $totalVerifiedImages === 144 && count($seenImageHashes) === 144,
+    'Integrità e unicità 144 immagini prodotto WebP HD (4 foto reali uniche per tutti i 36 prodotti incluso AgustaWestland AW139 VIP Heli, 0 duplicati MD5)',
+    empty($missingOrCorruptImages) ? "Verificate: {$totalVerifiedImages} uniche" : implode('; ', array_slice($missingOrCorruptImages, 0, 5))
 );
 
 $suppliers = Supplier::allWithCounts();
