@@ -27,7 +27,14 @@ jobs:
         env:
           PLESK_WEBHOOK_URL: ${{ secrets.PLESK_WEBHOOK_URL }}
         run: |
-          if [ -n "$PLESK_WEBHOOK_URL" ]; then
-            HTTP_CODE=$(curl -k -sS -o /dev/null -w "%{http_code}" -X POST "$PLESK_WEBHOOK_URL")
-            echo "Plesk Git Webhook trigger completato (HTTP $HTTP_CODE)"
+          if [ -z "$PLESK_WEBHOOK_URL" ]; then
+            echo "::error::Secret PLESK_WEBHOOK_URL non configurato"
+            exit 1
           fi
+          HTTP_CODE=$(curl -k -sS -o /dev/null -w "%{http_code}" -X POST "$PLESK_WEBHOOK_URL")
+          echo "Plesk Git Webhook trigger completato (HTTP $HTTP_CODE)"
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "204" ]; then
+            echo "::error::Deploy Plesk Git Webhook fallito con codice HTTP $HTTP_CODE"
+            exit 1
+          fi
+

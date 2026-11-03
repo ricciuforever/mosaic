@@ -5,6 +5,7 @@ require_once __DIR__ . '/../bootstrap/helpers.php';
 
 use App\Core\Application;
 use App\Core\Auth;
+use App\Core\Database;
 use App\Core\Migrator;
 use App\Core\Request;
 use App\Models\BookingRequest;
@@ -17,6 +18,16 @@ use App\Models\User;
 echo "=================================================================\n";
 echo " MOSAIC LUXURY CONCIERGE & RBAC · SUITE DI TEST AUTOMATIZZATA\n";
 echo "=================================================================\n";
+
+// Protezione anti-distruzione DB di produzione: se APP_ENV=production, isola i test su SQLite effimero
+$ephemeralTestSqlite = null;
+if (env('APP_ENV') === 'production' && !env('FORCE_PRODUCTION_DB_TEST', false)) {
+    $ephemeralTestSqlite = database_path('testing.sqlite');
+    if (is_file($ephemeralTestSqlite)) {
+        @unlink($ephemeralTestSqlite);
+    }
+    Database::useSqlite($ephemeralTestSqlite);
+}
 
 // Reset DB to clean seeded state
 Migrator::migrateAndSeed(false);
@@ -347,7 +358,14 @@ assertTest(
 );
 // Restore standby default and clean DB state
 Setting::set('supplier_portal_mode', 'standby');
-Migrator::migrateAndSeed(false);
+if ($ephemeralTestSqlite !== null) {
+    Database::resetConnection();
+    if (is_file($ephemeralTestSqlite)) {
+        @unlink($ephemeralTestSqlite);
+    }
+} else {
+    Migrator::migrateAndSeed(false);
+}
 
 echo "-----------------------------------------------------------------\n";
 echo " RISULTATO FINALE: {$passed} test superati, {$failed} falliti.\n";
