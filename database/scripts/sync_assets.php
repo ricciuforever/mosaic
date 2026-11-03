@@ -93,7 +93,9 @@ foreach ($jets as $slug => $meta) {
         mkdir($dir, 0777, true);
     }
     for ($i = 1; $i <= 4; $i++) {
-        $view = $viewLabels[$i - 1];
+        $view = htmlspecialchars($viewLabels[$i - 1], ENT_XML1 | ENT_QUOTES, 'UTF-8');
+        $safeTitle = htmlspecialchars($meta['title'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
+        $safeSub = htmlspecialchars($meta['sub'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
         $svg = <<<SVG
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
   <defs>
@@ -134,8 +136,8 @@ foreach ($jets as $slug => $meta) {
     <circle cx="120" cy="-2" r="7" fill="#e6c68f"/>
     <path d="M210,-20 L275,-6 L210,-4 Z" fill="#e6c68f" fill-opacity="0.45"/>
   </g>
-  <text x="80" y="660" fill="#f3efe6" font-family="Georgia, serif" font-size="44" font-weight="600">{$meta['title']}</text>
-  <text x="80" y="705" fill="#d8b273" font-family="sans-serif" font-size="20" letter-spacing="2">{$meta['sub']} · {$view}</text>
+  <text x="80" y="660" fill="#f3efe6" font-family="Georgia, serif" font-size="44" font-weight="600">{$safeTitle}</text>
+  <text x="80" y="705" fill="#d8b273" font-family="sans-serif" font-size="20" letter-spacing="2">{$safeSub} · {$view}</text>
 </svg>
 SVG;
         file_put_contents("$dir/$i.svg", $svg);

@@ -2434,10 +2434,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/gulfstream-g650er-olbia/1.svg',
-      1 => '/images/products/gulfstream-g650er-olbia/2.svg',
-      2 => '/images/products/gulfstream-g650er-olbia/3.svg',
-      3 => '/images/products/gulfstream-g650er-olbia/4.svg',
+      0 => '/images/products/gulfstream-g650er-olbia/1.webp',
+      1 => '/images/products/gulfstream-g650er-olbia/2.webp',
+      2 => '/images/products/gulfstream-g650er-olbia/3.webp',
+      3 => '/images/products/gulfstream-g650er-olbia/4.webp',
     ),
     'description' => 'L\'ammiraglia dell\'aviazione privata mondiale per raggiungere la Costa Smeralda senza scali da qualunque capitale europea o intercontinentale. Cabina silenziosa pressurizzata a quota ridotta, sedute in pelle Poltrona Frau convertibili in letti piani, connettività satellitare Ka-band ad alta velocità e accoglienza dedicata presso il terminal VIP Eccelsa Aviation di Olbia con trasferimento diretto sottobordo.',
     'amenities' => 
@@ -2502,10 +2502,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/pilatus-pc-24-costa-smeralda/1.svg',
-      1 => '/images/products/pilatus-pc-24-costa-smeralda/2.svg',
-      2 => '/images/products/pilatus-pc-24-costa-smeralda/3.svg',
-      3 => '/images/products/pilatus-pc-24-costa-smeralda/4.svg',
+      0 => '/images/products/pilatus-pc-24-costa-smeralda/1.webp',
+      1 => '/images/products/pilatus-pc-24-costa-smeralda/2.webp',
+      2 => '/images/products/pilatus-pc-24-costa-smeralda/3.webp',
+      3 => '/images/products/pilatus-pc-24-costa-smeralda/4.webp',
     ),
     'description' => 'Il jet svizzero progettato per collegare Ginevra, Zurigo, Milano Linate, Parigi e Londra direttamente con Olbia in totale flessibilità. Dotato di ampia porta cargo pressurizzata ideale per bauli, attrezzatura subacquea o golf bag, e interni firmati BMW Designworks.',
     'amenities' => 
@@ -2566,10 +2566,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/agustawestland-aw139-heli-vip/1.svg',
-      1 => '/images/products/agustawestland-aw139-heli-vip/2.svg',
-      2 => '/images/products/agustawestland-aw139-heli-vip/3.svg',
-      3 => '/images/products/agustawestland-aw139-heli-vip/4.svg',
+      0 => '/images/products/agustawestland-aw139-heli-vip/1.webp',
+      1 => '/images/products/agustawestland-aw139-heli-vip/2.webp',
+      2 => '/images/products/agustawestland-aw139-heli-vip/3.webp',
+      3 => '/images/products/agustawestland-aw139-heli-vip/4.webp',
     ),
     'description' => 'Il riferimento assoluto nel trasporto elicotteristico presidenziale e VIP. L\'AW139 biturbina collega in soli 8 minuti l\'aeroporto di Olbia con le elisuperfici private delle ville di Porto Cervo, Cala di Volpe, Porto Rotondo o il ponte di volo del tuo yacht, oltre a voli panoramici verso l\'Arcipelago di La Maddalena e la Corsica del Sud.',
     'amenities' => 
@@ -2630,10 +2630,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/bombardier-challenger-350-napoli/1.svg',
-      1 => '/images/products/bombardier-challenger-350-napoli/2.svg',
-      2 => '/images/products/bombardier-challenger-350-napoli/3.svg',
-      3 => '/images/products/bombardier-challenger-350-napoli/4.svg',
+      0 => '/images/products/bombardier-challenger-350-napoli/1.webp',
+      1 => '/images/products/bombardier-challenger-350-napoli/2.webp',
+      2 => '/images/products/bombardier-challenger-350-napoli/3.webp',
+      3 => '/images/products/bombardier-challenger-350-napoli/4.webp',
     ),
     'description' => 'Il Super Midsize Jet più amato per raggiungere la Costiera Amalfitana e Capri. Atterraggio presso il nuovo scalo di Salerno Costa d\'Amalfi o il terminal aviazione generale di Napoli, con cabina ad altezza d\'uomo, finestrini panoramici maggiorati e collegamento immediato in elicottero o motoscafo veloce verso Positano e Ravello.',
     'amenities' => 
@@ -2694,10 +2694,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/airbus-ach145-positano-capri/1.svg',
-      1 => '/images/products/airbus-ach145-positano-capri/2.svg',
-      2 => '/images/products/airbus-ach145-positano-capri/3.svg',
-      3 => '/images/products/airbus-ach145-positano-capri/4.svg',
+      0 => '/images/products/airbus-ach145-positano-capri/1.webp',
+      1 => '/images/products/airbus-ach145-positano-capri/2.webp',
+      2 => '/images/products/airbus-ach145-positano-capri/3.webp',
+      3 => '/images/products/airbus-ach145-positano-capri/4.webp',
     ),
     'description' => 'Evita completamente il traffico costiero: in soli 14 minuti di volo panoramico sul Golfo di Napoli e sui Faraglioni, l\'Airbus ACH145 in edizione Mercedes-Benz Style collega gli aeroporti di Napoli e Salerno con le elisuperfici di Ravello, Positano, Sorrento e Anacapri.',
     'amenities' => 
@@ -2757,10 +2757,10 @@ Otto metri e mezzo di eleganza minimale con prendisole di prua e pozzetto conviv
     ),
     'images' => 
     array (
-      0 => '/images/products/cessna-citation-longitude-como/1.svg',
-      1 => '/images/products/cessna-citation-longitude-como/2.svg',
-      2 => '/images/products/cessna-citation-longitude-como/3.svg',
-      3 => '/images/products/cessna-citation-longitude-como/4.svg',
+      0 => '/images/products/cessna-citation-longitude-como/1.webp',
+      1 => '/images/products/cessna-citation-longitude-como/2.webp',
+      2 => '/images/products/cessna-citation-longitude-como/3.webp',
+      3 => '/images/products/cessna-citation-longitude-como/4.webp',
     ),
     'description' => 'La cabina più silenziosa della categoria Super Midsize abbinata al collegamento elicotteristico immediato da Milano Linate Prime o Lugano Agno direttamente alle elisuperfici private di Cernobbio, Tremezzo e Bellagio sul Lago di Como.',
     'amenities' => 

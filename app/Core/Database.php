@@ -206,6 +206,14 @@ class Database
             $count = self::selectOne('SELECT COUNT(*) AS cnt FROM `products`');
             if (((int) ($count['cnt'] ?? 0)) === 0) {
                 Migrator::seed(false);
+            } else {
+                $legacySvg = self::selectOne("SELECT id FROM `products` WHERE `images_json` LIKE '%.svg%' LIMIT 1");
+                if ($legacySvg !== null) {
+                    self::execute("UPDATE `products` SET `images_json` = REPLACE(`images_json`, '.svg', '.webp') WHERE `images_json` LIKE '%.svg%'");
+                    if (self::tableExists('booking_items')) {
+                        self::execute("UPDATE `booking_items` SET `product_image` = REPLACE(`product_image`, '.svg', '.webp') WHERE `product_image` LIKE '%.svg%'");
+                    }
+                }
             }
         }
         self::$isBootstrapped = true;

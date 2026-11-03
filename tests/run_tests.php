@@ -66,6 +66,52 @@ assertTest(count($allProducts) === 36, 'Catalogo completo 36 prodotti (10 Ville,
 $jets = Product::filter(['category' => 'jet']);
 assertTest(count($jets) === 6, 'Categoria Jet Privati & Elicotteri VIP attiva con 6 prodotti', 'Trovati: ' . count($jets));
 
+$missingOrCorruptImages = [];
+$totalVerifiedImages = 0;
+foreach ($allProducts as $prod) {
+    $imgs = $prod['images'] ?? [];
+    if (count($imgs) < 4) {
+        $missingOrCorruptImages[] = "{$prod['slug']}: meno di 4 immagini (" . count($imgs) . ")";
+    }
+    foreach ($imgs as $idx => $imgRel) {
+        $fullImgPath = base_path('public' . $imgRel);
+        if (!is_file($fullImgPath) || filesize($fullImgPath) < 500) {
+            $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: file mancante o vuoto ({$imgRel})";
+            continue;
+        }
+        $ext = strtolower(pathinfo($fullImgPath, PATHINFO_EXTENSION));
+        if ($ext === 'svg') {
+            libxml_use_internal_errors(true);
+            $xml = simplexml_load_file($fullImgPath);
+            libxml_clear_errors();
+            if ($xml === false) {
+                $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: SVG XML malformato ({$imgRel})";
+                continue;
+            }
+        } else {
+            $imgInfo = @getimagesize($fullImgPath);
+            if ($imgInfo === false || ($imgInfo[0] ?? 0) < 200 || ($imgInfo[1] ?? 0) < 200) {
+                $missingOrCorruptImages[] = "{$prod['slug']}[{$idx}]: immagine raster corrotta ({$imgRel})";
+                continue;
+            }
+        }
+        $totalVerifiedImages++;
+    }
+}
+foreach (glob(base_path('public/images/products/*/*.svg')) ?: [] as $svgFile) {
+    libxml_use_internal_errors(true);
+    $xml = simplexml_load_file($svgFile);
+    libxml_clear_errors();
+    if ($xml === false) {
+        $missingOrCorruptImages[] = 'SVG corrotto: ' . basename(dirname($svgFile)) . '/' . basename($svgFile);
+    }
+}
+assertTest(
+    empty($missingOrCorruptImages) && $totalVerifiedImages === 144,
+    'Integrità 144 immagini prodotto (hero + galleria 4 foto reali verificate per tutti i 36 prodotti incluso AgustaWestland AW139 VIP Heli)',
+    empty($missingOrCorruptImages) ? "Verificate: {$totalVerifiedImages}" : implode('; ', array_slice($missingOrCorruptImages, 0, 5))
+);
+
 $suppliers = Supplier::allWithCounts();
 assertTest(count($suppliers) === 15, '15 Fornitori verificati accreditati a database', 'Trovati: ' . count($suppliers));
 
@@ -140,9 +186,32 @@ assertTest(
 );
 
 $resJetDetail = dispatchSim($app, 'GET', '/prodotto/gulfstream-g650er-olbia');
+$resAw139Detail = dispatchSim($app, 'GET', '/prodotto/agustawestland-aw139-heli-vip');
+$aw139Html = $resAw139Detail->content();
+$legacyHydrated = Product::hydrate([
+    'id' => 999,
+    'price' => 4200,
+    'capacity' => 6,
+    'lng' => 9.539,
+    'lat' => 41.124,
+    'map_x' => 53,
+    'map_y' => 32,
+    'featured' => 1,
+    'is_available' => 1,
+    'images_json' => json_encode(['/images/products/agustawestland-aw139-heli-vip/1.svg', '/images/products/agustawestland-aw139-heli-vip/2.svg']),
+]);
 assertTest(
-    $resJetDetail->status() === 200 && str_contains($resJetDetail->content(), 'Gulfstream G650ER'),
-    'GET /prodotto/gulfstream-g650er-olbia (Scheda Prodotto Categoria Jet)'
+    $resJetDetail->status() === 200
+    && str_contains($resJetDetail->content(), 'Gulfstream G650ER')
+    && str_contains($resJetDetail->content(), '/images/products/gulfstream-g650er-olbia/1.webp')
+    && $resAw139Detail->status() === 200
+    && str_contains($aw139Html, 'AgustaWestland AW139 VIP Heli')
+    && str_contains($aw139Html, '/images/products/agustawestland-aw139-heli-vip/1.webp')
+    && str_contains($aw139Html, '/images/products/agustawestland-aw139-heli-vip/2.webp')
+    && str_contains($aw139Html, '/images/products/agustawestland-aw139-heli-vip/3.webp')
+    && str_contains($aw139Html, '/images/products/agustawestland-aw139-heli-vip/4.webp')
+    && ($legacyHydrated['images'][0] ?? '') === '/images/products/agustawestland-aw139-heli-vip/1.webp',
+    'GET /prodotto/gulfstream-g650er-olbia e /prodotto/agustawestland-aw139-heli-vip (Galleria 4 foto WebP e auto-normalizzazione legacy .svg -> .webp)'
 );
 
 // Edge case: 404 on non-existent product slug

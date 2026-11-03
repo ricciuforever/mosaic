@@ -17,7 +17,16 @@ class Product
         $r['map_y'] = (float)$r['map_y'];
         $r['featured'] = (bool)$r['featured'];
         $r['is_available'] = (bool)$r['is_available'];
-        $r['images'] = json_decode($r['images_json'] ?? '[]', true) ?: [];
+        $rawImages = json_decode($r['images_json'] ?? '[]', true) ?: [];
+        $r['images'] = array_map(static function (string $img): string {
+            if (str_ends_with($img, '.svg')) {
+                $webp = substr($img, 0, -4) . '.webp';
+                if (is_file(base_path('public' . $webp))) {
+                    return $webp;
+                }
+            }
+            return $img;
+        }, $rawImages);
         $r['amenities'] = json_decode($r['amenities_json'] ?? '[]', true) ?: [];
         $r['servicesIncluded'] = json_decode($r['services_included_json'] ?? '[]', true) ?: [];
         $r['servicesExcluded'] = json_decode($r['services_excluded_json'] ?? '[]', true) ?: [];

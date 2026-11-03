@@ -20,7 +20,7 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, pdo, pdo_sqlite, pdo_mysql, curl, json
 
-      - name: Esecuzione Suite Test Automatici (30/30)
+      - name: Esecuzione Suite Test Automatici (31/31)
         run: php artisan test
 
       - name: Deploy automatico su Cloud1 Plesk via Webhook Git

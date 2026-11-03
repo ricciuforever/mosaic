@@ -208,7 +208,7 @@ class AdminController
             $prefix = $category === 'villa' ? 'vl' : ($category === 'auto' ? 'au' : ($category === 'yacht' ? 'yc' : 'jt'));
             $code = $prefix . '-' . rand(20, 99);
             $unit = $category === 'villa' ? 'notte' : ($category === 'jet' ? 'tratta' : 'giorno');
-            $defaultImg = $category === 'jet' ? '/images/products/gulfstream-g650er-olbia/1.svg' : '/images/products/villa-smeralda-porto-cervo/1.webp';
+            $defaultImg = $category === 'jet' ? '/images/products/gulfstream-g650er-olbia/1.webp' : '/images/products/villa-smeralda-porto-cervo/1.webp';
 
             $newId = Database::insert('products', [
                 'code' => $code,
