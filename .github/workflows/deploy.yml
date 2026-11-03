@@ -36,7 +36,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_KEY }}
           port: 22
           script: |
             plesk ext git --deploy -domain mosaic.emanueletolomei.it -name mosaic.git || (cd /var/www/vhosts/emanueletolomei.it/mosaic.emanueletolomei.it && git fetch origin main && git reset --hard origin/main)
