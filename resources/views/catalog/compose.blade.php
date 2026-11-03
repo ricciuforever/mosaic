@@ -4,7 +4,7 @@
     /* Multi-Leg & Multi-Category Notch Bar */
     .composer-notch {
         position: sticky;
-        top: 74px;
+        top: var(--header-sticky-height, 74px);
         z-index: 80;
         background: rgba(11, 15, 23, 0.96);
         backdrop-filter: blur(18px);
@@ -102,10 +102,11 @@
     .compose-split {
         display: grid;
         grid-template-columns: 56% 44%;
+        align-items: start;
         min-height: calc(100vh - 230px);
     }
     .compose-catalog-pane {
-        padding: 24px 28px 60px;
+        padding: 24px 28px 96px;
     }
     .compose-cards-grid {
         display: grid;
@@ -134,8 +135,8 @@
     /* Map Pane & Custom Floating Controls (MapLibre GL + OpenFreeMap Dark Luxury) */
     .compose-map-pane {
         position: sticky;
-        top: 205px;
-        height: calc(100vh - 205px);
+        top: var(--composer-sticky-top, 220px);
+        height: calc(100vh - var(--composer-sticky-top, 220px));
         border-left: 1px solid var(--border-subtle);
         background: radial-gradient(120% 90% at 78% 12%, #101a20 0%, #0c141b 42%, #0a1016 100%);
         overflow: hidden;
@@ -148,7 +149,7 @@
     }
     .map-overlay-top {
         position: absolute;
-        top: 18px;
+        top: calc(22px + var(--map-top-overlap, 0px));
         left: 50%;
         transform: translateX(-50%);
         z-index: 4;
@@ -166,11 +167,21 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.65);
         white-space: nowrap;
     }
+    .map-controls-right {
+        position: absolute;
+        right: 18px;
+        top: calc(22px + var(--map-top-overlap, 0px));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        z-index: 3;
+    }
 
     @media (max-width: 1080px) {
         .cat-stepper { grid-template-columns: 1fr 1fr; }
         .compose-split { grid-template-columns: 1fr; }
-        .compose-map-pane { position: relative; top: 0; height: 440px; order: -1; }
+        .compose-map-pane { position: relative; top: 0; height: 440px; order: -1; --map-top-overlap: 0px !important; }
     }
 </style>
 
@@ -333,7 +344,7 @@
                 </label>
             </div>
 
-            <div style="position:absolute;right:18px;top:18px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:3;">
+            <div class="map-controls-right">
                 <button type="button" id="btn-map-fit-bounds" title="Inquadra i risultati" style="width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,0.14);background:rgba(12,16,23,0.85);backdrop-filter:blur(8px);color:#d8d3c9;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.4);">
                     <svg viewBox="0 0 24 24" style="width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;">
                         <circle cx="12" cy="12" r="4"></circle>
@@ -629,9 +640,12 @@
                 fadeDuration: 150
             });
 
+            mapLoaded = true;
+            syncMapMarkers(getFilteredProducts(), true);
+
             map.on('load', () => {
-                mapLoaded = true;
-                syncMapMarkers(getFilteredProducts(), true);
+                map.resize();
+                syncMapMarkers(getFilteredProducts(), false);
             });
 
             map.on('moveend', () => {
@@ -964,9 +978,52 @@
         adultsSelect.value = adultsStr;
     }
 
+    function syncMapControlsOverlap() {
+        const notch = document.querySelector('.composer-notch');
+        const mapPane = document.querySelector('.compose-map-pane');
+        if (!notch || !mapPane) return;
+        if (window.innerWidth <= 1080) {
+            mapPane.style.setProperty('--map-top-overlap', '0px');
+            return;
+        }
+        const notchBottom = notch.getBoundingClientRect().bottom;
+        const mapTop = mapPane.getBoundingClientRect().top;
+        const maxShift = Math.max(0, mapPane.offsetHeight - 200);
+        const overlap = Math.max(0, Math.min(Math.ceil(notchBottom - mapTop), maxShift));
+        mapPane.style.setProperty('--map-top-overlap', overlap + 'px');
+    }
+
+    function syncStickyMapOffset() {
+        const notch = document.querySelector('.composer-notch');
+        const mapPane = document.querySelector('.compose-map-pane');
+        if (!notch || !mapPane) return;
+        const headerEl = document.querySelector('.site-header');
+        const headerH = headerEl ? Math.ceil(headerEl.getBoundingClientRect().height) : 74;
+        const notchH = Math.ceil(notch.getBoundingClientRect().height);
+        const topOffset = Math.max(216, headerH + notchH);
+        document.documentElement.style.setProperty('--header-sticky-height', headerH + 'px');
+        document.documentElement.style.setProperty('--composer-sticky-top', topOffset + 'px');
+        mapPane.style.setProperty('--composer-sticky-top', topOffset + 'px');
+        syncMapControlsOverlap();
+        if (map && mapLoaded) {
+            map.resize();
+        }
+    }
+    window.addEventListener('resize', syncStickyMapOffset);
+    window.addEventListener('scroll', syncMapControlsOverlap, { passive: true });
+    if (typeof ResizeObserver !== 'undefined') {
+        const stickyRo = new ResizeObserver(() => syncStickyMapOffset());
+        const headerEl = document.querySelector('.site-header');
+        const notchEl = document.querySelector('.composer-notch');
+        if (headerEl) stickyRo.observe(headerEl);
+        if (notchEl) stickyRo.observe(notchEl);
+    }
+
     function renderAll(shouldFitBounds = false) {
         renderNotchBar();
+        syncStickyMapOffset();
         renderCardsAndMarkers(shouldFitBounds);
+        syncMapControlsOverlap();
     }
 
     // Event Listeners

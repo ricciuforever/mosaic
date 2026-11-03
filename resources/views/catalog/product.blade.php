@@ -722,13 +722,15 @@ $extra = $product['extra'] ?? [];
                     fadeDuration: 150
                 });
 
+                const pinEl = document.createElement('div');
+                pinEl.className = 'msc-pin msc-pin--active';
+                pinEl.textContent = prodLocality;
+                new maplibregl.Marker({ element: pinEl, anchor: 'bottom', offset: [0, -4] })
+                    .setLngLat([lng, lat])
+                    .addTo(miniMap);
+
                 miniMap.on('load', () => {
-                    const pinEl = document.createElement('div');
-                    pinEl.className = 'msc-pin msc-pin--active';
-                    pinEl.textContent = prodLocality;
-                    new maplibregl.Marker({ element: pinEl, anchor: 'bottom', offset: [0, -4] })
-                        .setLngLat([lng, lat])
-                        .addTo(miniMap);
+                    miniMap.resize();
                     miniMap.jumpTo({ center: [lng, lat], zoom: 11.6 });
                 });
 

@@ -314,6 +314,9 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
 
         /* MapLibre GL Luxury Markers & Attribution (Prototype exact CSS) */
         .msc-pin {
+            display: inline-block;
+            width: max-content;
+            max-width: max-content;
             color: #e8e3d9;
             cursor: pointer;
             white-space: nowrap;
@@ -324,8 +327,24 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
             font-family: Manrope, sans-serif;
             font-size: 13px;
             font-weight: 600;
+            line-height: 1.2;
             transition: border-color .2s, color .2s;
             box-shadow: 0 6px 16px #0006;
+        }
+        .msc-pin:not(.maplibregl-marker) {
+            position: relative;
+        }
+        .maplibregl-marker.msc-pin,
+        .msc-pin.maplibregl-marker,
+        .msc-pin--active.maplibregl-marker,
+        .msc-pin--hover.maplibregl-marker {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            right: auto;
+            bottom: auto;
+            width: max-content !important;
+            max-width: max-content !important;
         }
         .msc-pin--hover {
             color: #e6c68f;
@@ -338,12 +357,11 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
             background: linear-gradient(#d0a45a, #b6813e);
             border-color: #ffecc880;
             font-weight: 700;
-            position: relative;
             box-shadow: 0 8px 20px #9a6a3080;
         }
         .msc-pin--active:before {
             content: "";
-            z-index: -1;
+            z-index: -2;
             background: #c69a4e99;
             border-radius: 50%;
             width: 34px;
@@ -353,6 +371,16 @@ $portalMode = $supplierPortalMode ?? Setting::get('supplier_portal_mode', 'stand
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .msc-pin--active:after {
+            content: "";
+            z-index: -1;
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(#d0a45a, #b6813e);
+            pointer-events: none;
         }
         .maplibregl-ctrl-attrib {
             border-radius: 10px 0 0;

@@ -87,12 +87,19 @@ assertTest(
     && str_contains($composeHtml, 'msc-pin')
     && str_contains($composeHtml, 'msc-pin--active')
     && str_contains($composeHtml, 'msc-pin--hover')
+    && str_contains($composeHtml, '.msc-pin--active.maplibregl-marker')
+    && str_contains($composeHtml, '.msc-pin--active:after')
+    && str_contains($composeHtml, 'position: absolute !important;')
+    && str_contains($composeHtml, 'width: max-content !important;')
+    && str_contains($composeHtml, 'map-controls-right')
+    && str_contains($composeHtml, 'syncStickyMapOffset')
+    && str_contains($composeHtml, 'syncMapControlsOverlap')
     && str_contains($composeHtml, 'Inquadra i risultati')
     && str_contains($composeHtml, 'LngLatBounds')
     && str_contains($composeHtml, '#131b17')
     && str_contains($composeHtml, '#0a121d')
     && !str_contains($composeHtml, 'leaflet@'),
-    'GET /compose (Compositore Multi-Tappa con Mappa WebGL MapLibre GL + OpenFreeMap Dark Luxury, .msc-pin e LngLatBounds)'
+    'GET /compose (Compositore Multi-Tappa con Mappa WebGL MapLibre GL + OpenFreeMap Dark Luxury, .msc-pin position:absolute max-content, map-controls-right e LngLatBounds)'
 );
 
 $resComposeIso = dispatchSim($app, 'GET', '/compose?dest=costa-smeralda&from=2026-11-08&to=2026-11-15&adults=2&children=0&cats=auto');
@@ -123,10 +130,13 @@ assertTest(
     && str_contains($cullinanHtml, 'zoom: 11.6')
     && str_contains($cullinanHtml, 'interactive: false')
     && str_contains($cullinanHtml, 'msc-pin msc-pin--active')
+    && str_contains($cullinanHtml, '.msc-pin--active.maplibregl-marker')
+    && str_contains($cullinanHtml, '.msc-pin--active:after')
+    && str_contains($cullinanHtml, 'width: max-content !important;')
     && str_contains($cullinanHtml, 'Porto Cervo')
     && str_contains($cullinanHtml, 'Costa Smeralda · Sardegna')
     && !str_contains($cullinanHtml, 'leaflet@'),
-    'GET /prodotto/rolls-royce-cullinan (Scheda Prodotto completa + Mini-Map MapLibre GL 280px, zoom 11.6, marker Porto Cervo e badge Costa Smeralda · Sardegna)'
+    'GET /prodotto/rolls-royce-cullinan (Scheda Prodotto completa + Mini-Map MapLibre GL 280px, zoom 11.6, marker Porto Cervo max-content e badge Costa Smeralda · Sardegna)'
 );
 
 $resJetDetail = dispatchSim($app, 'GET', '/prodotto/gulfstream-g650er-olbia');
