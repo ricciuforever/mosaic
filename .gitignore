@@ -32,3 +32,5 @@ yarn-error.log
 /.vscode
 /database/*.sqlite
 /database/*.sqlite-*
+/database/*.sql
+*.sql

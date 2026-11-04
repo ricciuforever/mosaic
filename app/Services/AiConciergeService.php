@@ -272,7 +272,7 @@ class AiConciergeService
     private static function callGeminiFlash(string $apiKey, string $prompt, array $fallbackParsed): ?array
     {
         $model = config('services.gemini.model', 'gemini-2.5-flash');
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
         $sysInstruction = "Sei il Senior Private Concierge di MOSAIC, piattaforma d'élite per esperienze di lusso in Italia. "
             . "Estrai dal prompt dell'utente un oggetto JSON con le chiavi: "
@@ -301,10 +301,13 @@ class AiConciergeService
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'x-goog-api-key: ' . $apiKey,
+            ],
             CURLOPT_POSTFIELDS => json_encode($body),
             CURLOPT_TIMEOUT => 6,
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => true,
         ]);
         $res = curl_exec($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
