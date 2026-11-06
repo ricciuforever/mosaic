@@ -51,7 +51,8 @@ foreach (array_chunk($urls, 25, true) as $chunk) {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_TIMEOUT        => 20,
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_USERAGENT      => 'MosaicAssetSync/1.0'
         ]);
         curl_multi_add_handle($mh, $ch);
